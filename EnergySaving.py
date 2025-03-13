@@ -22,8 +22,25 @@ class UnitConverter:
 
 class EnergyCalculator:
     COMPANY_RATES = {
-        "BATELEC": 11.8569,  # Updated rate per kWh in currency
+        "BATELEC": 11.8569,
         "MERALCO": 12.0262
+    }
+    
+    APPLIANCE_DATABASE = {
+        "Air Conditioner": 1.5,  # kW
+        "Refrigerator": 0.2,
+        "Washing Machine": 0.5,
+        "Microwave": 1.2,
+        "Electric Fan": 0.075,
+        "Iron": 1.0,
+        "Television": 0.1,
+        "Laptop": 0.05,
+        "Desktop Computer": 0.2,
+        "Water Heater": 3.0,
+        "Toaster": 0.8,
+        "Blender": 0.3,
+        "Rice Cooker": 0.6,
+        "Electric Kettle": 1.5
     }
     
     def __init__(self, power, time, appliance, company):
@@ -33,7 +50,7 @@ class EnergyCalculator:
         self.company = company.upper()
     
     def calculate_energy(self):
-        return self.power * self.time  # Energy (kWh) = Power (kW) * Time (h)
+        return self.power * self.time
     
     def calculate_cost(self):
         energy = self.calculate_energy()
@@ -54,28 +71,69 @@ class ReportGenerator:
 
 class UserInterface:
     def run(self):
-        print("Welcome to the Energy Calculator!")
-        appliance = input("Enter the appliance name: ")
-        power = float(input("Enter power value: "))
-        power_unit = input("Enter power unit (W, kW, HP): ")
-        time = float(input("Enter time value: "))
-        time_unit = input("Enter time unit (seconds, minutes, hours): ")
-        company = input("Choose company (BATELEC/MERALCO): ").upper()
-        
-        converter = UnitConverter()
-        power_kW = converter.convert_power_units(power, power_unit, 'kW')
-        time_hours = converter.convert_time_units(time, time_unit, 'hours')
-        
-        calculator = EnergyCalculator(power_kW, time_hours, appliance, company)
-        energy = calculator.calculate_energy()
-        cost = calculator.calculate_cost()
-        
-        print(f"Appliance: {appliance}")
-        print(f"Energy consumed: {energy:.2f} kWh ({company} rates apply)")
-        print(f"Estimated Cost: {cost:.2f} currency units")
-        
-        report_generator = ReportGenerator()
-        report_generator.generate_report(appliance, energy, cost, company)
+        while True:
+            print("\n=================================")
+            print("Welcome to the Energy Calculator!")
+            print("=================================")
+            print("1. Enter power manually")
+            print("2. Choose an appliance")
+            print("3. Exit")
+            print("---------------------------------")
+            choice = input("Select an option: ").strip()
+            
+            if choice == "3":
+                print("Exiting program. Goodbye!")
+                break
+            
+            if choice == "2":
+                print("\n=================================")
+                print("Available appliances:")
+                print("=================================")
+                for i, appliance in enumerate(EnergyCalculator.APPLIANCE_DATABASE.keys(), 1):
+                    print(f"{i}. {appliance}")
+                print("---------------------------------")
+                appliance_choice = input("Choose an appliance by number: ")
+                appliance_list = list(EnergyCalculator.APPLIANCE_DATABASE.keys())
+                
+                if not appliance_choice.isdigit() or int(appliance_choice) not in range(1, len(appliance_list) + 1):
+                    print("Invalid selection. Try again.")
+                    continue
+                
+                appliance = appliance_list[int(appliance_choice) - 1]
+                power = EnergyCalculator.APPLIANCE_DATABASE[appliance]
+                power_unit = "kW"
+            elif choice == "1":
+                print("\n=================================")
+                appliance = input("Enter the appliance name: ")
+                power = float(input("Enter power value: "))
+                power_unit = input("Enter power unit (W, kW, HP): ")
+            else:
+                print("Invalid selection. Try again.")
+                continue
+            
+            print("\n=================================")
+            time = float(input("Enter time value: "))
+            time_unit = input("Enter time unit (seconds, minutes, hours): ")
+            company = input("Choose company (BATELEC/MERALCO): ").upper()
+            
+            converter = UnitConverter()
+            power_kW = converter.convert_power_units(power, power_unit, 'kW')
+            time_hours = converter.convert_time_units(time, time_unit, 'hours')
+            
+            calculator = EnergyCalculator(power_kW, time_hours, appliance, company)
+            energy = calculator.calculate_energy()
+            cost = calculator.calculate_cost()
+            
+            print("\n=================================")
+            print(f"Appliance: {appliance}")
+            print(f"Energy consumed: {energy:.2f} kWh ({company} rates applied)")
+            print(f"Estimated Cost: ₱{cost:.2f}")
+            print("=================================")
+            
+            report_generator = ReportGenerator()
+            report_generator.generate_report(appliance, energy, cost, company)
+            
+            input("\nPress Enter to return to the main menu...")
 
 if __name__ == "__main__":
     UserInterface().run()
