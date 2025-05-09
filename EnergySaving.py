@@ -1,6 +1,10 @@
+from unittest.mock import patch
+
 import datetime
 import csv
 import os
+import io
+import sys
 
 class UnitConverter:
     def convert_power_units(self, power, from_unit, to_unit):
@@ -192,6 +196,53 @@ class UserInterface:
 
 # ================= Test Case Implementation =================
 
+def test_TC001():
+    """Verify program accepts valid menu input (option 1) and navigates to manual input"""
+    print("\nTest Case ID: TC001 - Valid menu selection")
+    
+    # Simulate user entering 1 (manual input), then 0 (cancel), then 3 (exit)
+    user_inputs = ['1', '0', '3']
+    
+    with patch('builtins.input', side_effect=user_inputs):
+        with patch('sys.stdout', new=io.StringIO()) as fake_output:
+            ui = UserInterface()
+            ui.run()
+            output = fake_output.getvalue()
+    
+    # Split output into lines for easier verification
+    output_lines = output.split('\n')
+    
+    # Verify the manual input prompt appears after selecting option 1
+    found = False
+    for line in output_lines:
+        if "Enter the appliance name" in line:
+            found = True
+            break
+    
+    if not found:
+        print("✗ Failed - Did not reach manual input screen")
+        print("Full output was:")
+        print(output)
+    else:
+        print("✓ Passed - Successfully navigated to manual input")
+
+def test_TC002():
+    """Test invalid menu input (string input)"""
+    print("\nTest Case ID: TC002")
+    
+    # Simulate user input: invalid string, then 3 (exit)
+    user_inputs = ["Use promo code AKSRAFFLE", '3']
+    
+    with patch('builtins.input', side_effect=user_inputs):
+        with patch('sys.stdout', new=io.StringIO()) as fake_out:
+            ui = UserInterface()
+            ui.run()
+            output = fake_out.getvalue()
+    
+    # Verify error message appears
+    assert "Invalid selection" in output
+    print("Status: Passed")
+
 def test_TC003():
     print("Test Case ID: TC003")
     power = 1.5
@@ -281,6 +332,8 @@ def test_TC011():
     print("Status: Passed\n")
 
 if __name__ == "__main__":
+    test_TC001()
+    test_TC002()
     test_TC003()
     test_TC004()
     test_TC005()
